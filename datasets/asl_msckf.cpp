@@ -238,6 +238,9 @@ int main(int argc, char** argv)
       TEND(imu_prop);
       TRECORD(imu_prop);
 
+      std::cout << "DATAPACK 1: " << typeid(std::get<1>(data_pack)).name() << std::endl;
+      std::cout << "DATAPACK 2: " << typeid(std::get<0>(data_pack)).name() << std::endl;
+
       if(std::get<1>(data_pack)){
         std::cout << "PAST IF(std::get<l>(data_pack)))" << std::endl;
         ros::Time cur_clock_time = ros::Time::now();

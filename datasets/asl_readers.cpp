@@ -88,6 +88,7 @@ namespace asl_dataset
   {
     std::string fn = folder_ + "/data/" + list_iter_->second;
     cv::Mat img = cv::imread(fn, CV_LOAD_IMAGE_GRAYSCALE);
+    //std::cout << "IMAGE IN CV MAT: " << img << std::endl;
     if(img.rows == 0 && img.cols == 0){
       std::cout << "Error opening image " << fn << std::endl;
     }
