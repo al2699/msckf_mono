@@ -228,7 +228,9 @@ namespace asl_dataset
 
   bool IMU::has_next()
   {
+    std::cout<<"DEBUG:      IMU HasNext:  " << (list_iter_ != reading_list_.end()) << std::endl;
     if(reading_list_.size()==0)
+
       return false;
     return list_iter_ != reading_list_.end();
   }
@@ -255,7 +257,7 @@ namespace asl_dataset
         for(int i=0; i<rows; i++){
         for(int j=0; j<cols; j++){
         T_BS_.at<float>(i, j) = (float)(*it);
-        ++it;
+        //++it;
         }
         }
 
