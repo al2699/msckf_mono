@@ -80,6 +80,7 @@ namespace asl_dataset
 
   timestamp Camera::get_time()
   {
+    std::cout << "GET TIME CAM : " << list_iter_->first << std::endl;
     return list_iter_->first;
   }
 
@@ -95,6 +96,7 @@ namespace asl_dataset
 
   bool Camera::has_next()
   {
+    std::cout<<"DEBUG:      CAM HasNext:  " << (list_iter_ != image_list_.end()) << std::endl;
     if(image_list_.size()==0)
       return false;
 
@@ -210,6 +212,7 @@ namespace asl_dataset
 
   timestamp IMU::get_time()
   {
+    std::cout << "GET TIME IMU: " << list_iter_->first << std::endl;
     return list_iter_->first;
   }
 

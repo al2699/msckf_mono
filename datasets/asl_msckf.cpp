@@ -201,7 +201,7 @@ int main(int argc, char** argv)
   start_dataset_time.fromNSec(imu0->get_time());
 
   while(sync.has_next() && ros::ok()){
-
+  std::cout << "MAIN HAS_NEXT FOR CALCULATIONS" << std::endl;
 
 
     msckf_mono::StageTiming timing_data;
@@ -224,6 +224,7 @@ int main(int argc, char** argv)
       closest_gt = gt_reading.get();
     }*/
     if(imu_reading){
+    std::cout << "PAST IF(IMU_READING)" << std::endl;
       state_k++;
 
       TSTART(imu_prop);
@@ -238,6 +239,7 @@ int main(int argc, char** argv)
       TRECORD(imu_prop);
 
       if(std::get<1>(data_pack)){
+        std::cout << "PAST IF(std::get<l>(data_pack)))" << std::endl;
         ros::Time cur_clock_time = ros::Time::now();
         ros::Time cur_dataset_time;
         cur_dataset_time.fromNSec(imu0->get_time());
@@ -302,6 +304,7 @@ int main(int argc, char** argv)
           ros::Time cur_ros_time;
           cur_ros_time.fromNSec(cam0->get_time());
           {
+            std::cout << "POPULATING ODOM MESSAGES" << std::endl;
             nav_msgs::Odometry odom;
             odom.header.stamp = cur_ros_time;
             odom.header.frame_id = "map";
