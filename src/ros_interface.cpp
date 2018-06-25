@@ -155,7 +155,7 @@ namespace msckf_mono
     nh_.getParam(kalibr_camera+"/T_cam_imu", ros_param_list);
     ROS_ASSERT(ros_param_list.getType() == XmlRpc::XmlRpcValue::TypeArray);
 
-    for (int32_t i = 0; i < ros_param_list.size(); ++i) 
+    for (int32_t i = 0; i < ros_param_list.size(); ++i)
     {
       ROS_ASSERT(ros_param_list[i].getType() == XmlRpc::XmlRpcValue::TypeArray);
       for(int32_t j=0; j<ros_param_list[i].size(); ++j){

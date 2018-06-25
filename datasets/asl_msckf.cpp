@@ -320,9 +320,15 @@ int main(int argc, char** argv)
             odom.pose.pose.orientation.y = q_out.y();
             odom.pose.pose.orientation.z = q_out.z();
             odom_pub.publish(odom);
+            std::cout << "FINISHED PUBLISHING ODOM MESSAGES" << std::endl;
+
           }
 
+          std::cout << "NUM OF raw_img_pub subs: " << raw_img_pub.getNumSubscribers() << std::endl;
+
+
           if(raw_img_pub.getNumSubscribers()>0){
+            std::cout << "rawimpub > 0.POPULATING/PUBLISHING RAW IMG PUB" << std::endl;
             cv_bridge::CvImage out_img;
             out_img.header.frame_id = "cam0"; // Same timestamp and tf frame as input image
             out_img.header.stamp = cur_ros_time;
@@ -331,6 +337,7 @@ int main(int argc, char** argv)
             raw_img_pub.publish(out_img.toImageMsg());
           }
 
+          std::cout << "NUM OF track_img_pub subs: " << track_img_pub.getNumSubscribers() << std::endl;
           if(track_img_pub.getNumSubscribers()>0){
             cv_bridge::CvImage out_img;
             out_img.header.frame_id = "cam0"; // Same timestamp and tf frame as input image
@@ -340,6 +347,7 @@ int main(int argc, char** argv)
             track_img_pub.publish(out_img.toImageMsg());
           }
 
+          std::cout << "NUM OF map_pub subs: " << map_pub.getNumSubscribers() << std::endl;
           if(map_pub.getNumSubscribers()>0){
             std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> map =
               msckf.getMap();
@@ -357,7 +365,10 @@ int main(int argc, char** argv)
             map_pub.publish(pointcloud);
           }
 
+          std::cout << "NUM OF cam_pose_pub subs: " << cam_pose_pub.getNumSubscribers() << std::endl;
           if(cam_pose_pub.getNumSubscribers()>0){
+            std::cout << "1st: cam pose pub > 0" << std::endl;
+
             geometry_msgs::PoseArray cam_poses;
 
             auto msckf_cam_poses = msckf.getCamStates();
@@ -379,8 +390,9 @@ int main(int argc, char** argv)
 
             cam_pose_pub.publish(cam_poses);
           }
-
+          std::cout << "NUM OF cam_state_pub2 subs: " << cam_state_pub.getNumSubscribers() << std::endl;
           if(cam_state_pub.getNumSubscribers()>0){
+            std::cout << "1st: cam_state_pub > 0" << std::endl;
             msckf_mono::CamStates cam_states;
 
             auto msckf_cam_states = msckf.getCamStates();
@@ -408,7 +420,10 @@ int main(int argc, char** argv)
             cam_state_pub.publish(cam_states);
           }
 
+          std::cout << "NUM OF pruned_cam_states_track_pub subs: " << pruned_cam_states_track_pub.getNumSubscribers() << std::endl;
           if(pruned_cam_states_track_pub.getNumSubscribers()>0){
+            std::cout << "pruned_cam_states_track_pub subs > 0" << std::endl;
+
             nav_msgs::Path pruned_path;
             pruned_path.header.stamp = cur_ros_time;
             pruned_path.header.frame_id = "map";
