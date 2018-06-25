@@ -144,6 +144,7 @@ int main(int argc, char** argv)
     sync.next();
   }
 
+  //Initializes closest ground truth to
   msckf_mono::imuState<float> firstImuState;
   firstImuState.b_a = closest_gt.b_a;
   firstImuState.b_g = closest_gt.b_g;
@@ -183,8 +184,8 @@ int main(int argc, char** argv)
   ros::Publisher imu_track_pub = nh.advertise<nav_msgs::Path>("imu_path", 100);
   nav_msgs::Path imu_path;
 
-  ros::Publisher gt_track_pub = nh.advertise<nav_msgs::Path>("ground_truth_path", 100);
-  nav_msgs::Path gt_path;
+  //ros::Publisher gt_track_pub = nh.advertise<nav_msgs::Path>("ground_truth_path", 100);
+  //nav_msgs::Path gt_path;
 
   ros::Publisher time_state_pub = nh.advertise<msckf_mono::StageTiming>("stage_timing",10);
 
