@@ -145,6 +145,7 @@ int main(int argc, char** argv)
     ROS_INFO_STREAM("DEBUG:   Sync HasNext: " << sync.has_next());
   }
 
+  //Initializes closest ground truth to
   msckf_mono::imuState<float> firstImuState;
   /*firstImuState.b_a <<  -0.020657,  0.124945,  0.061968;        //= closest_gt.b_a;
   firstImuState.b_g <<  -0.001806,  0.020942,   0.07687 ;     //= closest_gt.b_g;
@@ -184,8 +185,8 @@ int main(int argc, char** argv)
   ros::Publisher imu_track_pub = nh.advertise<nav_msgs::Path>("imu_path", 100);
   nav_msgs::Path imu_path;
 
-  ros::Publisher gt_track_pub = nh.advertise<nav_msgs::Path>("ground_truth_path", 100);
-  nav_msgs::Path gt_path;
+  //ros::Publisher gt_track_pub = nh.advertise<nav_msgs::Path>("ground_truth_path", 100);
+  //nav_msgs::Path gt_path;
 
   ros::Publisher time_state_pub = nh.advertise<msckf_mono::StageTiming>("stage_timing",10);
 
