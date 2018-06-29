@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
-
+#include <iomanip>
+#include <fstream>
 #include <ros/ros.h>
 
 #include <image_transport/image_transport.h>
@@ -28,15 +29,41 @@ using namespace synchronizer;
 
 int main(int argc, char** argv)
 {
+
+
   ros::init(argc, argv, "image_listener");
   ros::NodeHandle nh;
 
   double x,y,z,w;
 
-  x = 0.089726;
-  y = 0.791692;
-  z = 0.02389;
-  w = 0.603823;
+  x = 0;
+  y = 0;
+  z = 0;
+  w = 1;
+
+  std::string fname = "quat_param.ini";
+  std::ifstream myFile (fname, std::ios::in);
+  if(!myFile)
+  {
+    std::cerr << "File: " << fname << " Not found" << std::endl;
+  }
+  std::cout << "Got here" << std::endl;
+  std::string dump;
+
+  myFile>>dump;
+  myFile>>w;
+  myFile>>dump;
+  myFile>>x;
+  myFile>>dump;
+  myFile>>y;
+  myFile>>dump;
+  myFile>>z;
+
+  myFile.close();
+          
+
+
+
 
   std::string data_set;
   double calib_end;
@@ -48,15 +75,15 @@ int main(int argc, char** argv)
     std::cerr << "Must define when the system stops a standstill" << std::endl;
     return 0;
   }
-  nh.param<float>("w", w);
-  nh.param<float>("x", x);
-  nh.param<float>("y", y);
-  nh.param<float>("z", z);
+  // nh.param<float>("w", w);
+  // nh.param<float>("x", x);
+  // nh.param<float>("y", y);
+  // nh.param<float>("z", z);
 
   ROS_INFO_STREAM("w " << w);
   ROS_INFO_STREAM("x " << x);
   ROS_INFO_STREAM("y " << y);
-  ROS_INFO_STREAM("z" << z);
+  ROS_INFO_STREAM("z " << z);
 
   std::shared_ptr<IMU> imu0;
   std::shared_ptr<Camera> cam0;
