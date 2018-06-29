@@ -30,7 +30,7 @@ using namespace Eigen;
 namespace msckf_mono {
   template <typename _S>
     class MSCKF {
-      private: 
+      private:
         Camera<_S> camera_;
         noiseParams<_S> noise_params_;
         MSCKFParams<_S> msckf_params_;
@@ -102,6 +102,7 @@ namespace msckf_mono {
           calcF(imu_state_, measurement_);
           calcG(imu_state_);
 
+          //Get an updated version of the ground truth version of the IMU state
           imuState<_S> imu_state_prop = propogateImuStateRK(imu_state_, measurement_);
 
           // F * dt
@@ -134,7 +135,7 @@ namespace msckf_mono {
           Matrix<_S, 15, 15> imu_covar_prop = Phi_ * (imu_covar_ + G_ * noise_params_.Q_imu * G_.transpose() * measurement_.dT) * Phi_.transpose();
 
 
-          // Apply updates directly
+          // Apply updates directly (TO THE ACTUAL IMU STATE FROM GROUNDTRUTH!!!!)
           imu_state_ = imu_state_prop;
           imu_state_.q_IG_null = imu_state_.q_IG;
           imu_state_.v_I_G_null = imu_state_.v_I_G;

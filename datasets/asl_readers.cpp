@@ -351,11 +351,13 @@ namespace asl_dataset
 
   msckf_mono::imuState<float> GroundTruth::get_data()
   {
+    std::cout << "GRABBING GT DATA." << std::endl;
     return list_iter_->second;
   }
 
   bool GroundTruth::next()
   {
+    std::cout << "INCREMENTING LIST ITER FOR GT." << std::endl;
     if(!has_next())
       return false;
     ++list_iter_;

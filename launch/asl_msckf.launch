@@ -5,10 +5,18 @@
 
   <arg name="data_set_path" default="/media/jeff/AA5E8AFD5E8AC195/VIO/euroc/MH_03/mav0"/>
   <arg name="stand_still_end" default="1403637149088318946."/>
+  <arg name="w" default="1."/>
+  <arg name="x" default="0."/>
+  <arg name="y" default="0."/>
+  <arg name="z" default="0."/>
 
   <group ns="msckf">
     <param name="data_set_path" value="$(arg data_set_path)"/>
     <param name="stand_still_end" value="$(arg stand_still_end)"/>
+    <param name="w" value="0.69"/>
+    <param name="x" value="0.420"/>
+    <param name="y" value="0.240"/>
+    <param name="z" value="0.042"/>
 
     <param name="feature_cov" value="2"/>
 
