@@ -60,13 +60,19 @@ int main(int argc, char** argv)
 
   std::shared_ptr<IMU> imu0;
   std::shared_ptr<Camera> cam0;
-  std::shared_ptr<GroundTruth> gt0;
+  //std::shared_ptr<GroundTruth> gt0;
 
   imu0.reset(new IMU("imu0", data_set+"/imu0"));
   cam0.reset(new Camera("cam0", data_set+"/cam0"));
+<<<<<<< HEAD
   // gt0.reset(new  GroundTruth("state_groundtruth_estimate0", data_set+"/state_groundtruth_estimate0"));
 
   Synchronizer<IMU, Camera> sync(imu0, cam0);
+=======
+  //gt0.reset(new  GroundTruth("state_groundtruth_estimate0", data_set+"/state_groundtruth_estimate0"));
+
+  Synchronizer<IMU, Camera> sync(imu0, cam0); //GrountTruth, gt0
+>>>>>>> f62616fc53e7e6e053990019e0f85a709067d967
 
   msckf_mono::MSCKF<float> msckf;
 
@@ -145,19 +151,33 @@ int main(int argc, char** argv)
 
   int state_k = 0;
 
+<<<<<<< HEAD
   // msckf_mono::imuState<float> closest_gt; //GroundTruth closest to standstill time
+=======
+  //msckf_mono::imuState<float> closest_gt;
+>>>>>>> f62616fc53e7e6e053990019e0f85a709067d967
   // start from standstill
 
   while(imu0->get_time()<calib_end && sync.has_next()){
     auto data_pack = sync.get_data();
+<<<<<<< HEAD
     // auto gt_reading = std::get<2>(data_pack);
 
     // if(gt_reading){
       // closest_gt = gt_reading.get();
     // }
+=======
+    //auto gt_reading = std::get<2>(data_pack);
+
+    //if(gt_reading){
+    //  closest_gt = gt_reading.get();
+    //}
+>>>>>>> f62616fc53e7e6e053990019e0f85a709067d967
     sync.next();
+    ROS_INFO_STREAM("DEBUG:   Sync HasNext: " << sync.has_next());
   }
 
+<<<<<<< HEAD
   //Setting the first imu state equal to the ground truth closest to time just after
   //take off
   msckf_mono::imuState<float> firstImuState;
@@ -169,6 +189,17 @@ int main(int argc, char** argv)
   firstImuState.p_I_G = msckf_mono::Vector3<float>::Zero();//closest_gt.p_I_G; //Eigen::Vector3d::Zero();
   firstImuState.v_I_G = msckf_mono::Vector3<float>::Zero();//closest_gt.v_I_G; //Eigen::Vector3d::Zero();
 
+=======
+  //Initializes closest ground truth to
+  msckf_mono::imuState<float> firstImuState;
+  /*firstImuState.b_a <<  -0.020657,  0.124945,  0.061968;        //= closest_gt.b_a;
+  firstImuState.b_g <<  -0.001806,  0.020942,   0.07687 ;     //= closest_gt.b_g;
+  firstImuState.g << 0.0, 0.0, -9.81;
+  firstImuState.q_IG << 0.183654,0.791425,0.280842,0.791425;       //= closest_gt.q_IG;
+  firstImuState.p_I_G << 4.60284, -1.65657, 0.568583;       //= closest_gt.p_I_G; //Eigen::Vector3d::Zero();
+  firstImuState.v_I_G << -0.000374101,   0.00114107,  -0.00123956;     //= closest_gt.v_I_G; //Eigen::Vector3d::Zero();
+  */
+>>>>>>> f62616fc53e7e6e053990019e0f85a709067d967
   msckf.initialize(camera, noise_params, msckf_params, firstImuState);
   msckf_mono::imuState<float> imu_state = msckf.getImuState(); //Initial first imu state from groun truth
   msckf_mono::imuReading<float> imu_data = imu0->get_data();
@@ -185,6 +216,7 @@ int main(int argc, char** argv)
     "\n---a " << imu_data.a.transpose()<<
     "\n---g " << imu_state.g.transpose()<<
     "\n---world_adjusted_a " << (q.toRotationMatrix().transpose()*(imu_data.a-imu_state.b_a)).transpose());
+<<<<<<< HEAD
   // q = closest_gt.q_IG;
   // ROS_INFO_STREAM("Initial GT State" <<
   //   "\n---p_I_G " << closest_gt.p_I_G.transpose() <<
@@ -192,6 +224,15 @@ int main(int argc, char** argv)
   //   "\n---v_I_G " << closest_gt.v_I_G.transpose() <<
   //   "\n---b_a " << closest_gt.b_a.transpose() <<
   //   "\n---b_g " << closest_gt.b_g.transpose());
+=======
+  /*q = closest_gt.q_IG;
+  ROS_INFO_STREAM("Initial GT State" <<
+    "\n---p_I_G " << closest_gt.p_I_G.transpose() <<
+    "\n---q_IG " << q.w() << "," << q.x() << "," << q.y() << "," << q.x() <<
+    "\n---v_I_G " << closest_gt.v_I_G.transpose() <<
+    "\n---b_a " << closest_gt.b_a.transpose() <<
+    "\n---b_g " << closest_gt.b_g.transpose());*/
+>>>>>>> f62616fc53e7e6e053990019e0f85a709067d967
 
   ros::Publisher odom_pub = nh.advertise<nav_msgs::Odometry>("odom", 100);
   ros::Publisher map_pub = nh.advertise<sensor_msgs::PointCloud2>("map", 100);
@@ -202,8 +243,13 @@ int main(int argc, char** argv)
   ros::Publisher imu_track_pub = nh.advertise<nav_msgs::Path>("imu_path", 100);
   nav_msgs::Path imu_path;
 
+<<<<<<< HEAD
   // ros::Publisher gt_track_pub = nh.advertise<nav_msgs::Path>("ground_truth_path", 100);
   // nav_msgs::Path gt_path;
+=======
+  //ros::Publisher gt_track_pub = nh.advertise<nav_msgs::Path>("ground_truth_path", 100);
+  //nav_msgs::Path gt_path;
+>>>>>>> f62616fc53e7e6e053990019e0f85a709067d967
 
   ros::Publisher time_state_pub = nh.advertise<msckf_mono::StageTiming>("stage_timing",10);
 
@@ -219,6 +265,9 @@ int main(int argc, char** argv)
   start_dataset_time.fromNSec(imu0->get_time());
 
   while(sync.has_next() && ros::ok()){
+  std::cout << "MAIN HAS_NEXT FOR CALCULATIONS" << std::endl;
+
+
     msckf_mono::StageTiming timing_data;
 #define TSTART(X) ros::Time start_##X = ros::Time::now();
 #define TEND(X) ros::Time end_##X = ros::Time::now();
@@ -233,12 +282,21 @@ int main(int argc, char** argv)
 
     auto imu_reading = std::get<0>(data_pack);
 
+<<<<<<< HEAD
     // auto gt_reading = std::get<2>(data_pack);
 
     // if(gt_reading){
     //   closest_gt = gt_reading.get();
     // }
+=======
+    //auto gt_reading = std::get<2>(data_pack);
+
+    /*if(gt_reading){
+      closest_gt = gt_reading.get();
+    }*/
+>>>>>>> f62616fc53e7e6e053990019e0f85a709067d967
     if(imu_reading){
+    std::cout << "PAST IF(IMU_READING)" << std::endl;
       state_k++;
 
       TSTART(imu_prop);
@@ -252,7 +310,13 @@ int main(int argc, char** argv)
       TEND(imu_prop);
       TRECORD(imu_prop);
 
+      //std::cout << "DATAPACK 1: " << typeid(std::get<1>(data_pack)).name() << std::endl;
+      //std::cout << "DATAPACK 1: " << std::get<1>(data_pack) << std::endl;
+      //std::cout << "DATAPACK 1: " << typeid(std::get<1>(data_pack)).name() << std::endl;
+      //std::cout << "DATAPACK 2: " << typeid(std::get<0>(data_pack)).name() << std::endl;
+
       if(std::get<1>(data_pack)){
+        std::cout << "PAST IF(std::get<l>(data_pack)))" << std::endl;
         ros::Time cur_clock_time = ros::Time::now();
         ros::Time cur_dataset_time;
         cur_dataset_time.fromNSec(imu0->get_time());
@@ -317,6 +381,7 @@ int main(int argc, char** argv)
           ros::Time cur_ros_time;
           cur_ros_time.fromNSec(cam0->get_time());
           {
+            std::cout << "POPULATING ODOM MESSAGES" << std::endl;
             nav_msgs::Odometry odom;
             odom.header.stamp = cur_ros_time;
             odom.header.frame_id = "map";
@@ -329,9 +394,15 @@ int main(int argc, char** argv)
             odom.pose.pose.orientation.y = q_out.y();
             odom.pose.pose.orientation.z = q_out.z();
             odom_pub.publish(odom);
+            std::cout << "FINISHED PUBLISHING ODOM MESSAGES" << std::endl;
+
           }
 
+          std::cout << "NUM OF raw_img_pub subs: " << raw_img_pub.getNumSubscribers() << std::endl;
+
+
           if(raw_img_pub.getNumSubscribers()>0){
+            std::cout << "rawimpub > 0.POPULATING/PUBLISHING RAW IMG PUB" << std::endl;
             cv_bridge::CvImage out_img;
             out_img.header.frame_id = "cam0"; // Same timestamp and tf frame as input image
             out_img.header.stamp = cur_ros_time;
@@ -340,6 +411,7 @@ int main(int argc, char** argv)
             raw_img_pub.publish(out_img.toImageMsg());
           }
 
+          std::cout << "NUM OF track_img_pub subs: " << track_img_pub.getNumSubscribers() << std::endl;
           if(track_img_pub.getNumSubscribers()>0){
             cv_bridge::CvImage out_img;
             out_img.header.frame_id = "cam0"; // Same timestamp and tf frame as input image
@@ -349,6 +421,7 @@ int main(int argc, char** argv)
             track_img_pub.publish(out_img.toImageMsg());
           }
 
+          std::cout << "NUM OF map_pub subs: " << map_pub.getNumSubscribers() << std::endl;
           if(map_pub.getNumSubscribers()>0){
             std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> map =
               msckf.getMap();
@@ -366,7 +439,10 @@ int main(int argc, char** argv)
             map_pub.publish(pointcloud);
           }
 
+          std::cout << "NUM OF cam_pose_pub subs: " << cam_pose_pub.getNumSubscribers() << std::endl;
           if(cam_pose_pub.getNumSubscribers()>0){
+            std::cout << "1st: cam pose pub > 0" << std::endl;
+
             geometry_msgs::PoseArray cam_poses;
 
             auto msckf_cam_poses = msckf.getCamStates();
@@ -388,8 +464,9 @@ int main(int argc, char** argv)
 
             cam_pose_pub.publish(cam_poses);
           }
-
+          std::cout << "NUM OF cam_state_pub2 subs: " << cam_state_pub.getNumSubscribers() << std::endl;
           if(cam_state_pub.getNumSubscribers()>0){
+            std::cout << "1st: cam_state_pub > 0" << std::endl;
             msckf_mono::CamStates cam_states;
 
             auto msckf_cam_states = msckf.getCamStates();
@@ -417,7 +494,10 @@ int main(int argc, char** argv)
             cam_state_pub.publish(cam_states);
           }
 
+          std::cout << "NUM OF pruned_cam_states_track_pub subs: " << pruned_cam_states_track_pub.getNumSubscribers() << std::endl;
           if(pruned_cam_states_track_pub.getNumSubscribers()>0){
+            std::cout << "pruned_cam_states_track_pub subs > 0" << std::endl;
+
             nav_msgs::Path pruned_path;
             pruned_path.header.stamp = cur_ros_time;
             pruned_path.header.frame_id = "map";
@@ -449,14 +529,14 @@ int main(int argc, char** argv)
             gt_path.header.frame_id = "map";
             geometry_msgs::PoseStamped gt_pose;
             gt_pose.header = gt_path.header;
-            gt_pose.pose.position.x = closest_gt.p_I_G[0];
-            gt_pose.pose.position.y = closest_gt.p_I_G[1];
-            gt_pose.pose.position.z = closest_gt.p_I_G[2];
+            /*gt_pose.pose.position.x = 0;      //closest_gt.p_I_G[0];
+            gt_pose.pose.position.y = 0;      //closest_gt.p_I_G[1];
+            gt_pose.pose.position.z = 0;      //closest_gt.p_I_G[2];
             msckf_mono::Quaternion<float> q_out = closest_gt.q_IG.inverse();
             gt_pose.pose.orientation.w = q_out.w();
             gt_pose.pose.orientation.x = q_out.x();
             gt_pose.pose.orientation.y = q_out.y();
-            gt_pose.pose.orientation.z = q_out.z();
+            gt_pose.pose.orientation.z = q_out.z();*/
 
             gt_path.poses.push_back(gt_pose);
 
@@ -496,4 +576,5 @@ int main(int argc, char** argv)
 
     sync.next();
   }
+  ROS_INFO_STREAM(" DEBUG:    Ended While, Terminating");
 }

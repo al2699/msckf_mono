@@ -80,6 +80,7 @@ namespace asl_dataset
 
   timestamp Camera::get_time()
   {
+    std::cout << "GET TIME CAM : " << list_iter_->first << std::endl;
     return list_iter_->first;
   }
 
@@ -87,6 +88,7 @@ namespace asl_dataset
   {
     std::string fn = folder_ + "/data/" + list_iter_->second;
     cv::Mat img = cv::imread(fn, CV_LOAD_IMAGE_GRAYSCALE);
+    //std::cout << "IMAGE IN CV MAT: " << img << std::endl;
     if(img.rows == 0 && img.cols == 0){
       std::cout << "Error opening image " << fn << std::endl;
     }
@@ -95,6 +97,7 @@ namespace asl_dataset
 
   bool Camera::has_next()
   {
+    std::cout<<"DEBUG:      CAM HasNext:  " << (list_iter_ != image_list_.end()) << std::endl;
     if(image_list_.size()==0)
       return false;
 
@@ -210,6 +213,7 @@ namespace asl_dataset
 
   timestamp IMU::get_time()
   {
+    std::cout << "GET TIME IMU: " << list_iter_->first << std::endl;
     return list_iter_->first;
   }
 
@@ -228,7 +232,9 @@ namespace asl_dataset
 
   bool IMU::has_next()
   {
+    std::cout<<"DEBUG:      IMU HasNext:  " << (list_iter_ != reading_list_.end()) << std::endl;
     if(reading_list_.size()==0)
+
       return false;
     return list_iter_ != reading_list_.end();
   }
@@ -255,7 +261,7 @@ namespace asl_dataset
         for(int i=0; i<rows; i++){
         for(int j=0; j<cols; j++){
         T_BS_.at<float>(i, j) = (float)(*it);
-        ++it;
+        //++it;
         }
         }
 
