@@ -3,8 +3,8 @@
   <arg name="gdb_debug" default="false"/>
   <arg name="profile" default="false"/>
 
-  <arg name="data_set_path" default="/media/jeff/AA5E8AFD5E8AC195/VIO/euroc/MH_03/mav0"/>
-  <arg name="stand_still_end" default="1403637149088318946."/>
+  <arg name="data_set_path" default="/home/alanhernandez/Downloads/mav0"/>
+  <arg name="stand_still_end" default="1526349211390000000."/>
   <arg name="w" default="1."/>
   <arg name="x" default="0."/>
   <arg name="y" default="0."/>
@@ -53,7 +53,7 @@
       <node pkg="msckf_mono" name="asl_msckf" type="asl_msckf" launch-prefix="perf record -g --call-graph dwarf --output=perf.out.node_name.data --" if="$(arg profile)"/>
     </group>
 
-    <node pkg="rviz" name="msckf_rviz" type="rviz" args="-d $(find msckf_mono)/launch/asl_msckf.rviz"/>
+    <!--<node pkg="rviz" name="msckf_rviz" type="rviz" args="-d $(find msckf_mono)/launch/asl_msckf.rviz"/> -->
 
   </group>
 </launch>

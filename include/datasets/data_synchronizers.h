@@ -95,7 +95,6 @@ namespace synchronizer
           if(b){
             return boost::optional<std::result_of_t<decltype(&T::get_data)(T)>>(s.get_data());
           }else{
-            std::cout << "SENSOR FOR NONE: " << typeid(s).name() << std::endl;
             //std::cout << "BOOST NONE:" << boost::none << std::endl;
             return boost::none;
           }
@@ -124,12 +123,10 @@ namespace synchronizer
       SensorDataPack get_data()
       {
         auto master_time = apply(sensors_, [](auto...s){return std::min({s->get_time()...});});
-        std::cout <<  "MASTER TIME: " << master_time << std::endl;
         SensorDataPack sdp = apply(sensors_, [&master_time](auto...s)
             {
               return std::make_tuple(Synchronizer::conditional_get_data(*s, s->get_time()<=master_time) ... );
               //std::cout << "TIME OF CAM: " << s->get_time() << std::endl;
-              std::cout << "MASTER TIME: " << master_time << std::endl;
               //return test;
             });
         return sdp;

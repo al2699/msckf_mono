@@ -194,7 +194,7 @@ void CornerTracker::track_features(cv::Mat img_1, cv::Mat img_2, Point2fVector& 
 }
 
 TrackHandler::TrackHandler(const cv::Mat K,
-    const cv::Mat distortion_coeffs, const std::string dist_model) 
+    const cv::Mat distortion_coeffs, const std::string dist_model)
   : ransac_threshold_(0.0000002), next_feature_id_(0),
     gyro_accum_(Eigen::Vector3f::Zero()), n_gyro_readings_(0),
     K_(K), K_inv_(K.inv()), distortion_coeffs_(distortion_coeffs),
@@ -395,8 +395,8 @@ void TrackHandler::new_features(OutFeatureVector& features, IdVector& feature_id
     detector_.set_grid_position(f);
   }
   detector_.detect_features(cur_img_, new_features_);
-  std::cout << "[Detector] Found " << new_features_.size()
-            << " new features" << std::endl;
+  //std::cout << "[Detector] Found " << new_features_.size()
+  //          << " new features" << std::endl;
 
   // generate ids for the new features
   new_feature_ids_.reserve(feature_ids.size()+new_features_.size());
@@ -433,7 +433,7 @@ void TrackHandler::undistortPoints(Point2fVector& in, Point2fVector& out){
     cv::undistortPoints(in, out, K_, distortion_coeffs_);
   }
 }
- 
+
 void TrackHandler::set_ransac_threshold(double rt){
   ransac_threshold_ = rt;
 }

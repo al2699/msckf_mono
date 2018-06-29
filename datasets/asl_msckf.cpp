@@ -41,7 +41,7 @@ int main(int argc, char** argv)
   z = 0;
   w = 1;
 
-  std::string fname = "quat_param.ini";
+  std::string fname = "/home/alanhernandez/msckf/src/msckf_mono/datasets/quat_param.ini";
   std::ifstream myFile (fname, std::ios::in);
   if(!myFile)
   {
@@ -60,7 +60,7 @@ int main(int argc, char** argv)
   myFile>>z;
 
   myFile.close();
-          
+
 
 
 
@@ -250,7 +250,6 @@ int main(int argc, char** argv)
   start_dataset_time.fromNSec(imu0->get_time());
 
   while(sync.has_next() && ros::ok()){
-  std::cout << "MAIN HAS_NEXT FOR CALCULATIONS" << std::endl;
 
 
     msckf_mono::StageTiming timing_data;
@@ -275,7 +274,6 @@ int main(int argc, char** argv)
 
 
     if(imu_reading){
-    std::cout << "PAST IF(IMU_READING)" << std::endl;
       state_k++;
 
       TSTART(imu_prop);
@@ -295,7 +293,6 @@ int main(int argc, char** argv)
       //std::cout << "DATAPACK 2: " << typeid(std::get<0>(data_pack)).name() << std::endl;
 
       if(std::get<1>(data_pack)){
-        std::cout << "PAST IF(std::get<l>(data_pack)))" << std::endl;
         ros::Time cur_clock_time = ros::Time::now();
         ros::Time cur_dataset_time;
         cur_dataset_time.fromNSec(imu0->get_time());
@@ -360,7 +357,6 @@ int main(int argc, char** argv)
           ros::Time cur_ros_time;
           cur_ros_time.fromNSec(cam0->get_time());
           {
-            std::cout << "POPULATING ODOM MESSAGES" << std::endl;
             nav_msgs::Odometry odom;
             odom.header.stamp = cur_ros_time;
             odom.header.frame_id = "map";
@@ -373,15 +369,12 @@ int main(int argc, char** argv)
             odom.pose.pose.orientation.y = q_out.y();
             odom.pose.pose.orientation.z = q_out.z();
             odom_pub.publish(odom);
-            std::cout << "FINISHED PUBLISHING ODOM MESSAGES" << std::endl;
 
           }
 
-          std::cout << "NUM OF raw_img_pub subs: " << raw_img_pub.getNumSubscribers() << std::endl;
 
 
           if(raw_img_pub.getNumSubscribers()>0){
-            std::cout << "rawimpub > 0.POPULATING/PUBLISHING RAW IMG PUB" << std::endl;
             cv_bridge::CvImage out_img;
             out_img.header.frame_id = "cam0"; // Same timestamp and tf frame as input image
             out_img.header.stamp = cur_ros_time;
@@ -390,7 +383,6 @@ int main(int argc, char** argv)
             raw_img_pub.publish(out_img.toImageMsg());
           }
 
-          std::cout << "NUM OF track_img_pub subs: " << track_img_pub.getNumSubscribers() << std::endl;
           if(track_img_pub.getNumSubscribers()>0){
             cv_bridge::CvImage out_img;
             out_img.header.frame_id = "cam0"; // Same timestamp and tf frame as input image
@@ -400,7 +392,6 @@ int main(int argc, char** argv)
             track_img_pub.publish(out_img.toImageMsg());
           }
 
-          std::cout << "NUM OF map_pub subs: " << map_pub.getNumSubscribers() << std::endl;
           if(map_pub.getNumSubscribers()>0){
             std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> map =
               msckf.getMap();
@@ -418,9 +409,7 @@ int main(int argc, char** argv)
             map_pub.publish(pointcloud);
           }
 
-          std::cout << "NUM OF cam_pose_pub subs: " << cam_pose_pub.getNumSubscribers() << std::endl;
           if(cam_pose_pub.getNumSubscribers()>0){
-            std::cout << "1st: cam pose pub > 0" << std::endl;
 
             geometry_msgs::PoseArray cam_poses;
 
@@ -443,9 +432,7 @@ int main(int argc, char** argv)
 
             cam_pose_pub.publish(cam_poses);
           }
-          std::cout << "NUM OF cam_state_pub2 subs: " << cam_state_pub.getNumSubscribers() << std::endl;
           if(cam_state_pub.getNumSubscribers()>0){
-            std::cout << "1st: cam_state_pub > 0" << std::endl;
             msckf_mono::CamStates cam_states;
 
             auto msckf_cam_states = msckf.getCamStates();
@@ -473,9 +460,7 @@ int main(int argc, char** argv)
             cam_state_pub.publish(cam_states);
           }
 
-          std::cout << "NUM OF pruned_cam_states_track_pub subs: " << pruned_cam_states_track_pub.getNumSubscribers() << std::endl;
           if(pruned_cam_states_track_pub.getNumSubscribers()>0){
-            std::cout << "pruned_cam_states_track_pub subs > 0" << std::endl;
 
             nav_msgs::Path pruned_path;
             pruned_path.header.stamp = cur_ros_time;
