@@ -1,7 +1,6 @@
 #include <iostream>
 #include <string>
-#include <iomanip>
-#include <fstream>
+
 #include <ros/ros.h>
 
 #include <image_transport/image_transport.h>
@@ -29,72 +28,33 @@ using namespace synchronizer;
 
 int main(int argc, char** argv)
 {
-
-
   ros::init(argc, argv, "image_listener");
   ros::NodeHandle nh;
 
-  double x,y,z,w;
-
-  x = 0;
-  y = 0;
-  z = 0;
-  w = 1;
-
-  std::string fname = "/home/alanhernandez/msckf/src/msckf_mono/datasets/quat_param.ini";
-  std::ifstream myFile (fname, std::ios::in);
-  if(!myFile)
-  {
-    std::cerr << "File: " << fname << " Not found" << std::endl;
-  }
-  std::cout << "Got here" << std::endl;
-  std::string dump;
-
-  myFile>>dump;
-  myFile>>w;
-  myFile>>dump;
-  myFile>>x;
-  myFile>>dump;
-  myFile>>y;
-  myFile>>dump;
-  myFile>>z;
-
-  myFile.close();
-
-
-
-
-
   std::string data_set;
-  double calib_end;
+  double calib_end, calib_start;
   if(!nh.getParam("data_set_path", data_set)){
     std::cerr << "Must define a data_set_path" << std::endl;
+    return 0;
+  }
+  if(!nh.getParam("stand_still_start", calib_start)){
+    std::cerr << "Must define when the system starts a standstill" << std::endl;
     return 0;
   }
   if(!nh.getParam("stand_still_end", calib_end)){
     std::cerr << "Must define when the system stops a standstill" << std::endl;
     return 0;
   }
-  // nh.param<float>("w", w);
-  // nh.param<float>("x", x);
-  // nh.param<float>("y", y);
-  // nh.param<float>("z", z);
 
-  ROS_INFO_STREAM("w " << w);
-  ROS_INFO_STREAM("x " << x);
-  ROS_INFO_STREAM("y " << y);
-  ROS_INFO_STREAM("z " << z);
+  ROS_INFO_STREAM("Accessing dataset at " << data_set);
 
   std::shared_ptr<IMU> imu0;
   std::shared_ptr<Camera> cam0;
-  //std::shared_ptr<GroundTruth> gt0;
 
   imu0.reset(new IMU("imu0", data_set+"/imu0"));
   cam0.reset(new Camera("cam0", data_set+"/cam0"));
 
-  //gt0.reset(new  GroundTruth("state_groundtruth_estimate0", data_set+"/state_groundtruth_estimate0"));
-
-  Synchronizer<IMU, Camera> sync(imu0, cam0); //GrountTruth, gt0
+  Synchronizer<IMU, Camera> sync(imu0, cam0);
 
   msckf_mono::MSCKF<float> msckf;
 
@@ -173,38 +133,54 @@ int main(int argc, char** argv)
 
   int state_k = 0;
 
-  // msckf_mono::imuState<float> closest_gt; //GroundTruth closest to standstill time
   // start from standstill
+  while(imu0->get_time()<calib_start && sync.has_next()){
+    sync.next();
+  }
+
+  Eigen::Vector3f accel_accum;
+  Eigen::Vector3f gyro_accum;
+  int num_readings = 0;
+
+  accel_accum.setZero();
+  gyro_accum.setZero();
 
   while(imu0->get_time()<calib_end && sync.has_next()){
     auto data_pack = sync.get_data();
-    //auto gt_reading = std::get<2>(data_pack);
+    auto imu_reading = std::get<0>(data_pack);
 
-    //if(gt_reading){
-    //  closest_gt = gt_reading.get();
-    //}
+    if(imu_reading){
+      msckf_mono::imuReading<float> imu_data = imu_reading.get();
+      accel_accum += imu_data.a;
+      gyro_accum += imu_data.omega;
+      num_readings++;
+    }
+
     sync.next();
-    ROS_INFO_STREAM("DEBUG:   Sync HasNext: " << sync.has_next());
   }
 
-  //Setting the first imu state equal to the ground truth closest to time just after
-  //take off
+  Eigen::Vector3f accel_mean = accel_accum / num_readings;
+  Eigen::Vector3f gyro_mean = gyro_accum / num_readings;
+
   msckf_mono::imuState<float> firstImuState;
-  firstImuState.b_a = msckf_mono::Vector3<float>::Zero();//closest_gt.b_a;
-  firstImuState.b_g = msckf_mono::Vector3<float>::Zero();//closest_gt.b_g;
+  firstImuState.b_g = /*Eigen::Vector3f(0,9.81,0);//*/gyro_mean;
   firstImuState.g << 0.0, 0.0, -9.81;
-  //firstImuState.q_IG = closest_gt.q_IG;
-  firstImuState.q_IG = msckf_mono::Quaternion<float>(w, x, y, z);
-  firstImuState.p_I_G = msckf_mono::Vector3<float>::Zero();//closest_gt.p_I_G; //Eigen::Vector3d::Zero();
-  firstImuState.v_I_G = msckf_mono::Vector3<float>::Zero();//closest_gt.v_I_G; //Eigen::Vector3d::Zero();
+  firstImuState.q_IG = /*msckf_mono::Quaternion<float>(0.0, 0.707,0.0, 0.707);//*/Eigen::Quaternionf::FromTwoVectors(-firstImuState.g,accel_mean);
+
+  firstImuState.b_a = firstImuState.q_IG*firstImuState.g + accel_mean;
+  // firstImuState.b_a = Eigen::Vector3f(-0.01,-0.13208,0.01);
+
+  firstImuState.p_I_G.setZero();
+  firstImuState.v_I_G.setZero();
 
   msckf.initialize(camera, noise_params, msckf_params, firstImuState);
-  msckf_mono::imuState<float> imu_state = msckf.getImuState(); //Initial first imu state from groun truth
+  msckf_mono::imuState<float> imu_state = msckf.getImuState();
   msckf_mono::imuReading<float> imu_data = imu0->get_data();
+  //msckf_mono::imuReading<float> imu_data_temp = imu0->get_data();
+
+
   auto q = imu_state.q_IG;
 
- //Should be the same because imu_state was grabbed fromt the ground truth closest to the
- //standstill time
   ROS_INFO_STREAM("\nInitial IMU State" <<
     "\n---p_I_G " << imu_state.p_I_G.transpose() <<
     "\n---q_IG " << q.w() << "," << q.x() << "," << q.y() << "," << q.x() <<
@@ -215,15 +191,6 @@ int main(int argc, char** argv)
     "\n---g " << imu_state.g.transpose()<<
     "\n---world_adjusted_a " << (q.toRotationMatrix().transpose()*(imu_data.a-imu_state.b_a)).transpose());
 
-  // q = closest_gt.q_IG;
-  // ROS_INFO_STREAM("Initial GT State" <<
-  //   "\n---p_I_G " << closest_gt.p_I_G.transpose() <<
-  //   "\n---q_IG " << q.w() << "," << q.x() << "," << q.y() << "," << q.x() <<
-  //   "\n---v_I_G " << closest_gt.v_I_G.transpose() <<
-  //   "\n---b_a " << closest_gt.b_a.transpose() <<
-  //   "\n---b_g " << closest_gt.b_g.transpose());
-
-
   ros::Publisher odom_pub = nh.advertise<nav_msgs::Odometry>("odom", 100);
   ros::Publisher map_pub = nh.advertise<sensor_msgs::PointCloud2>("map", 100);
   ros::Publisher cam_pose_pub = nh.advertise<geometry_msgs::PoseArray>("cam_state_poses", 100);
@@ -233,8 +200,8 @@ int main(int argc, char** argv)
   ros::Publisher imu_track_pub = nh.advertise<nav_msgs::Path>("imu_path", 100);
   nav_msgs::Path imu_path;
 
-  //ros::Publisher gt_track_pub = nh.advertise<nav_msgs::Path>("ground_truth_path", 100);
-  //nav_msgs::Path gt_path;
+  ros::Publisher gt_track_pub = nh.advertise<nav_msgs::Path>("ground_truth_path", 100);
+  nav_msgs::Path gt_path;
 
   ros::Publisher time_state_pub = nh.advertise<msckf_mono::StageTiming>("stage_timing",10);
 
@@ -250,8 +217,6 @@ int main(int argc, char** argv)
   start_dataset_time.fromNSec(imu0->get_time());
 
   while(sync.has_next() && ros::ok()){
-
-
     msckf_mono::StageTiming timing_data;
 #define TSTART(X) ros::Time start_##X = ros::Time::now();
 #define TEND(X) ros::Time end_##X = ros::Time::now();
@@ -266,19 +231,12 @@ int main(int argc, char** argv)
 
     auto imu_reading = std::get<0>(data_pack);
 
-    // auto gt_reading = std::get<2>(data_pack);
-
-    // if(gt_reading){
-    //   closest_gt = gt_reading.get();
-    // }
-
-
     if(imu_reading){
       state_k++;
 
       TSTART(imu_prop);
-      msckf_mono::imuReading<float> imu_data = imu_reading.get(); //Current IMU data from sensor (i.e. measurement)
-      msckf_mono::imuState<float> prev_imu_state = msckf.getImuState(); //Prev data from gt
+      msckf_mono::imuReading<float> imu_data = imu_reading.get();
+      msckf_mono::imuState<float> prev_imu_state = msckf.getImuState();
       msckf_mono::Quaternion<float> prev_rotation = prev_imu_state.q_IG;
       msckf.propagate(imu_data);
 
@@ -286,11 +244,6 @@ int main(int argc, char** argv)
       th.add_gyro_reading(cam_frame_av);
       TEND(imu_prop);
       TRECORD(imu_prop);
-
-      //std::cout << "DATAPACK 1: " << typeid(std::get<1>(data_pack)).name() << std::endl;
-      //std::cout << "DATAPACK 1: " << std::get<1>(data_pack) << std::endl;
-      //std::cout << "DATAPACK 1: " << typeid(std::get<1>(data_pack)).name() << std::endl;
-      //std::cout << "DATAPACK 2: " << typeid(std::get<0>(data_pack)).name() << std::endl;
 
       if(std::get<1>(data_pack)){
         ros::Time cur_clock_time = ros::Time::now();
@@ -369,10 +322,7 @@ int main(int argc, char** argv)
             odom.pose.pose.orientation.y = q_out.y();
             odom.pose.pose.orientation.z = q_out.z();
             odom_pub.publish(odom);
-
           }
-
-
 
           if(raw_img_pub.getNumSubscribers()>0){
             cv_bridge::CvImage out_img;
@@ -410,7 +360,6 @@ int main(int argc, char** argv)
           }
 
           if(cam_pose_pub.getNumSubscribers()>0){
-
             geometry_msgs::PoseArray cam_poses;
 
             auto msckf_cam_poses = msckf.getCamStates();
@@ -432,6 +381,7 @@ int main(int argc, char** argv)
 
             cam_pose_pub.publish(cam_poses);
           }
+
           if(cam_state_pub.getNumSubscribers()>0){
             msckf_mono::CamStates cam_states;
 
@@ -461,7 +411,6 @@ int main(int argc, char** argv)
           }
 
           if(pruned_cam_states_track_pub.getNumSubscribers()>0){
-
             nav_msgs::Path pruned_path;
             pruned_path.header.stamp = cur_ros_time;
             pruned_path.header.frame_id = "map";
@@ -484,30 +433,6 @@ int main(int argc, char** argv)
             }
 
             pruned_cam_states_track_pub.publish(pruned_path);
-          }
-
-          {
-            /*
-            std::cout << "Starting publishing block." << std::endl;
-            gt_path.header.stamp = cur_ros_time;
-            gt_path.header.frame_id = "map";
-            geometry_msgs::PoseStamped gt_pose;
-            gt_pose.header = gt_path.header;
-            /*gt_pose.pose.position.x = 0;      //closest_gt.p_I_G[0];
-            gt_pose.pose.position.y = 0;      //closest_gt.p_I_G[1];
-            gt_pose.pose.position.z = 0;      //closest_gt.p_I_G[2];
-            msckf_mono::Quaternion<float> q_out = closest_gt.q_IG.inverse();
-            gt_pose.pose.orientation.w = q_out.w();
-            gt_pose.pose.orientation.x = q_out.x();
-            gt_pose.pose.orientation.y = q_out.y();
-            gt_pose.pose.orientation.z = q_out.z();
-
-            gt_path.poses.push_back(gt_pose);
-
-            gt_track_pub.publish(gt_path);
-
-            std::cout << "Ending publishing block." << std::endl;
-            */
           }
 
           {
@@ -540,5 +465,4 @@ int main(int argc, char** argv)
 
     sync.next();
   }
-  ROS_INFO_STREAM(" DEBUG:    Ended While, Terminating");
 }
