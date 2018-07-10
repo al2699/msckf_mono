@@ -6,32 +6,25 @@
   <arg name="data_set_path" default="/home/alanhernandez/Downloads/mav0"/>
   <arg name="stand_still_start" default="1526349211390000000."/>
   <arg name="stand_still_end" default="1526349211390000000."/>
-  <arg name="w" default="1."/>
-  <arg name="x" default="0."/>
-  <arg name="y" default="0."/>
-  <arg name="z" default="0."/>
 
   <group ns="msckf">
     <param name="data_set_path" value="$(arg data_set_path)"/>
     <param name="stand_still_start" value="$(arg stand_still_start)"/>
     <param name="stand_still_end" value="$(arg stand_still_end)"/>
-    <param name="w" value="0.69"/>
-    <param name="x" value="0.420"/>
-    <param name="y" value="0.240"/>
-    <param name="z" value="0.042"/>
 
-    <param name="feature_cov" value="3"/>
 
-    <param name="imu_vars/w_var" value="1e-7"/>          <!--1e-10-->
-    <param name="imu_vars/dbg_var" value="3.6733e-7"/>   <!--3.6733e-10-->
-    <param name="imu_vars/a_var" value="1e-4"/>           <!--1e-7-->
-    <param name="imu_vars/dba_var" value="7e-4"/>         <!--7e-7-->
+    <param name="feature_cov" value="3"/> <!--ORIGINAL: 2-->
 
-    <param name="imu_covars/p_init" value="1e-12"/>       <!--1e-16-->
-    <param name="imu_covars/q_init" value="1e-5"/>        <!--1e-9-->
-    <param name="imu_covars/v_init" value="1e-2"/>        <!--1e-6-->
-    <param name="imu_covars/ba_init" value="1e-2"/>       <!--1e-6-->
-    <param name="imu_covars/bg_init" value="1e-2"/>       <!--1e-6-->
+    <param name="imu_vars/w_var" value="1e-11"/>          <!--1e-7-->
+    <param name="imu_vars/dbg_var" value="3.6733e-10"/>   <!--3.6733e-7-->
+    <param name="imu_vars/a_var" value="1e-8"/>           <!--1e-4-->
+    <param name="imu_vars/dba_var" value="7e-7"/>         <!--7e-4-->
+
+    <param name="imu_covars/p_init" value="1e-16"/>       <!--1e-12-->
+    <param name="imu_covars/q_init" value="1e-9"/>        <!--1e-5-->
+    <param name="imu_covars/v_init" value="1e-6"/>        <!--1e-2-->
+    <param name="imu_covars/ba_init" value="1e-6"/>       <!--1e-2-->
+    <param name="imu_covars/bg_init" value="1e-6"/>       <!--1e-2-->
 
     <param name="translation_threshold" value="0.01"/><!--Max translation from marginalizing state-->
 
@@ -42,10 +35,10 @@
     <param name="max_track_length" value="50"/>
     <param name="max_cam_states" value="30"/>
 
-    <param name="ransac_threshold" value="0.0000002"/>  <!--0.000000002-->
+    <param name="ransac_threshold" value="0.000000002"/>  <!--0.0000002-->
 
-    <param name="n_grid_rows" value="10"/>              <!--15-->
-    <param name="n_grid_cols" value="10"/>              <!--15-->
+    <param name="n_grid_rows" value="15"/>              <!--10-->
+    <param name="n_grid_cols" value="15"/>              <!--10-->
 
     <group unless="$(arg profile)">
       <node pkg="msckf_mono" name="asl_msckf" type="asl_msckf" unless="$(arg gdb_debug)" output="screen"/>

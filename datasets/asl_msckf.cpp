@@ -1,5 +1,7 @@
 #include <iostream>
 #include <string>
+#include <iomanip>
+#include <fstream>
 
 #include <ros/ros.h>
 
@@ -68,8 +70,21 @@ int main(int argc, char** argv)
   camera.q_CI = cam0->get_q_BS();
   camera.p_C_I = cam0->get_p_BS();
 
+  //read ini file
+  std::string fname = "/home/alanhernandez/msckf/src/msckf_mono/datasets/launch_param.ini";
+  std::ifstream myFile (fname, std::ios::in);
+  if(!myFile)
+  {
+    std::cerr << "File: " << fname << " Not found" << std::endl;
+  }
+  std::string dump;
+
+
+
   float feature_cov;
-  nh.param<float>("feature_covariance", feature_cov, 7);
+  //nh.param<float>("feature_covariance", feature_cov, 7);
+  myFile>>dump;
+  myFile>>feature_cov;
 
   msckf_mono::noiseParams<float> noise_params;
   noise_params.u_var_prime = pow(feature_cov/camera.f_u,2);
@@ -77,9 +92,17 @@ int main(int argc, char** argv)
 
   Eigen::Matrix<float,12,1> Q_imu_vars;
   float w_var, dbg_var, a_var, dba_var;
-  nh.param<float>("imu_vars/w_var", w_var, 1e-5);
+
+  myFile>>dump;
+  myFile>>w_var;
+
+  myFile>>dump;
+  myFile>>a_var;
+
+
+  // nh.param<float>("imu_vars/w_var", w_var, 1e-5);
   nh.param<float>("imu_vars/dbg_var", dbg_var, 3.6733e-5);
-  nh.param<float>("imu_vars/a_var", a_var, 1e-3);
+  // nh.param<float>("imu_vars/a_var", a_var, 1e-3);
   nh.param<float>("imu_vars/dba_var", dba_var, 7e-4);
   Q_imu_vars << w_var, 	w_var, 	w_var,
                 dbg_var,dbg_var,dbg_var,
@@ -89,6 +112,11 @@ int main(int argc, char** argv)
 
   Eigen::Matrix<float,15,1> IMUCovar_vars;
   float q_var_init, bg_var_init, v_var_init, ba_var_init, p_var_init;
+
+
+
+
+
   nh.param<float>("imu_covars/q_var_init", q_var_init, 1e-5);
   nh.param<float>("imu_covars/bg_var_init", bg_var_init, 1e-2);
   nh.param<float>("imu_covars/v_var_init", v_var_init, 1e-2);
@@ -104,13 +132,26 @@ int main(int argc, char** argv)
   msckf_mono::MSCKFParams<float> msckf_params;
   nh.param<float>("max_gn_cost_norm", msckf_params.max_gn_cost_norm, 11);
   msckf_params.max_gn_cost_norm = pow(msckf_params.max_gn_cost_norm/camera.f_u, 2);
+  //
+  // myFile>>dump;
+  // myFile>>msckf_params.translation_threshold;
   nh.param<float>("translation_threshold", msckf_params.translation_threshold, 0.05);
   nh.param<float>("min_rcond", msckf_params.min_rcond, 3e-12);
 
   nh.param<float>("keyframe_transl_dist", msckf_params.redundancy_angle_thresh, 0.005);
   nh.param<float>("keyframe_rot_dist", msckf_params.redundancy_distance_thresh, 0.05);
+  // myFile>>dump;
+  // myFile>>msckf_params.redundancy_angle_thresh;
+  // myFile>>dump;
+  // myFile>>msckf_params.redundancy_distance_thresh;
 
   int max_tl, min_tl, max_cs;
+  // myFile>>dump;
+  // myFile>>max_tl;
+  // myFile>>dump;
+  // myFile>>min_tl;
+  // myFile>>dump;
+  // myFile>>max_cs;
   nh.param<int>("max_track_length", max_tl, 1000);	// set to inf to wait for features to go out of view
   nh.param<int>("min_track_length", min_tl, 3);		// set to infinity to dead-reckon only
   nh.param<int>("max_cam_states",   max_cs, 20);
@@ -123,12 +164,19 @@ int main(int argc, char** argv)
   corner_detector::TrackHandler th(cam0->get_K(), cam0->get_dist_coeffs(), "radtan");
 
   float ransac_threshold;
-  nh.param<float>("ransac_threshold", ransac_threshold, 0.000002);
+  myFile>>dump;
+  myFile>>ransac_threshold;
+  // nh.param<float>("ransac_threshold", ransac_threshold, 0.000002);
   th.set_ransac_threshold(ransac_threshold);
 
   int n_grid_rows, n_grid_cols;
-  nh.param<int>("n_grid_rows", n_grid_rows, 8);
-  nh.param<int>("n_grid_cols", n_grid_cols, 8);
+  myFile>>dump;
+  myFile>>n_grid_rows;
+  myFile>>dump;
+  myFile>>n_grid_cols;
+  myFile.close();
+  // nh.param<int>("n_grid_rows", n_grid_rows, 8);
+  // nh.param<int>("n_grid_cols", n_grid_cols, 8);
   th.set_grid_size(n_grid_rows, n_grid_cols);
 
   int state_k = 0;
