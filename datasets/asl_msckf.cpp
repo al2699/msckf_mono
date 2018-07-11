@@ -179,6 +179,14 @@ int main(int argc, char** argv)
   // nh.param<int>("n_grid_cols", n_grid_cols, 8);
   th.set_grid_size(n_grid_rows, n_grid_cols);
 
+  std::cout << "Parameters" << std::endl;
+  std::cout << "ransac: " << ransac_threshold << std::endl;
+  std::cout << "n_grid_rows: " << n_grid_rows << std::endl;
+  std::cout << "n_grid_cols: " << n_grid_cols << std::endl;
+  std::cout << "feature_cov: " << feature_cov << std::endl;
+  std::cout << "a_var: " << a_var << std::endl;
+  std::cout << "w_var: " << w_var << std::endl;
+
   int state_k = 0;
 
   // start from standstill
